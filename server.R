@@ -187,7 +187,75 @@
     })
    
    
-   
-   
+   #处理数据
+
+    
+    observeEvent(input$div22,{
+      print(input$div22)
+      output$txtShow2 <- renderPrint({
+        print(input$div22)
+        cat(input$div22)
+      })
+    })
+    
+   #读取数据原
+    observeEvent(input$acct_preview,{
+      run_dataTable2('acct_data_show',data = acctList)
+    })
+    #下载模板
+    acct_tpl <- list(head(acctList,100))
+    names(acct_tpl) <-'凭证调整分录'
+    run_download_xlsx('acct_adj_tpl',data = acct_tpl,filename = '凭证调整分录模板下载.xlsx')
+    
+    #生成公司报表
+    observeEvent(input$CorpRpt_gen,{
+      row1 = c('Mgmt Report Code','Mgmt Report Name')
+      col1 = c('部门')
+      myform = dcast_getFormula(row1,col1)
+      data <- reshape2::dcast(data = acctList,formula = myform,fun.aggregate = sum,value.var = 'Transactiona Amount (Dr+/Cr.-)')
+      run_dataTable2('CorpRpt_dataShow',data = data)
+      
+    })
+    #显示现金流量表
+    observeEvent(input$cf_gen,{
+      row1 = c('Cashflow code')
+      col1 = c('会计年月')
+      myform = dcast_getFormula(row1,col1)
+      data <- reshape2::dcast(data = acctList,formula = myform,fun.aggregate = sum,value.var = 'Transactiona Amount (Dr+/Cr.-)')
+      run_dataTable2('cf_dataShow',data = data)
+      
+    })
+    #生成项目报表
+    observeEvent(input$prj_gen,{
+      row1 = c('Mgmt Report Code','Mgmt Report Name')
+      col1 = c('Project')
+      myform = dcast_getFormula(row1,col1)
+      data <- reshape2::dcast(data = acctList,formula = myform,fun.aggregate = sum,value.var = 'Transactiona Amount (Dr+/Cr.-)')
+      run_dataTable2('prj_dataShow',data = data)
+      
+    })
+    
+    #生产OLAP报表
+    var_olap_row <- var_ListChooseN('olap_row')
+    var_olap_col <- var_ListChooseN('olap_col')
+    var_olap_value <- var_ListChoose1('olap_value')
+    observeEvent(input$olap_gen,{
+      row1 <- var_olap_row()
+      print(row1)
+      col1 <- var_olap_col()
+      print(col1)
+      value1 <- var_olap_value()
+      print(value1)
+      myform <- dcast_getFormula(row1,col1)
+      
+      data<- reshape2::dcast(data = acctList,formula = myform,fun.aggregate = sum,value.var = value1)
+      
+      run_dataTable2('olap_dataShow',data = data)
+      run_download_xlsx('olap_dl',data = data,filename = '凭证OLAP多维分析报表下载.xlsx')
+      
+      
+    })
+    
+    
   
 })
